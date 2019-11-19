@@ -1,6 +1,6 @@
 (ns pagerank.core (:require clojure.pprint))
 
-(def seq-file-lines (with-open [rdr (clojure.java.io/reader "/Users/samfeye/Desktop/CS441-PageRank/src/main/resources/pages.txt")]
+(def seq-file-lines (with-open [rdr (clojure.java.io/reader (clojure.java.io/resource "pages.txt"))]
                       (reduce conj [] (line-seq rdr))))
 
 (def link-map (for [line seq-file-lines]
@@ -18,7 +18,7 @@
       (hash-map :id id :rank rank))
     ))
 (defn PrintTest []
-  (let [bigmap (MakeMap)]
-    (clojure.pprint/pprint bigmap)))
+  (let [big-map (MakeMap)]
+    (clojure.pprint/pprint big-map)))
 
 (PrintTest)
