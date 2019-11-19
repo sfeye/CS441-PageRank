@@ -12,13 +12,14 @@
 (defn MakeMap []
   (for [line seq-file-lines]
     (let [nums (clojure.string/split line #" ")
-          id (read-string (first nums))
+          id (first nums)
           links (rest nums)
           rank (count links)]
-      (hash-map :id id :rank rank))
+      (hash-map (keyword id) rank))
     ))
+
 (defn PrintTest []
   (let [big-map (MakeMap)]
-    (clojure.pprint/pprint big-map)))
+  (clojure.pprint/pprint big-map)))
 
 (PrintTest)
