@@ -1,16 +1,11 @@
 (ns pagerank.core (:require clojure.pprint))
 
-(def seq-file-lines (with-open [rdr (clojure.java.io/reader (clojure.java.io/resource "pages.txt"))]
-                      (reduce conj [] (line-seq rdr))))
+(defn read-lines [file]
+  (with-open [rdr (clojure.java.io/reader (clojure.java.io/resource file))]
+    (doall (line-seq rdr))))
 
-(def link-map (for [line seq-file-lines]
-                (let [nums (clojure.string/split line #" ")
-                      id (read-string (first nums))
-                      links (rest nums)]
-                  (hash-map id links))))
-
-(defn MakeMap []
-  (for [line seq-file-lines]
+(defn split-file []
+  (for [line (read-lines "pages.txt")]
     (let [nums (clojure.string/split line #" ")
           id (first nums)
           links (rest nums)
@@ -18,8 +13,10 @@
       (hash-map (keyword id) rank))
     ))
 
+(defn make-map [s]
+  (reduce conj (map hash-map [:id :links] (.split s " " 2))))
+
 (defn PrintTest []
-  (let [big-map (MakeMap)]
-  (clojure.pprint/pprint big-map)))
+  (clojure.pprint/pprint (map make-map (read-lines "pages.txt"))))
 
 (PrintTest)
