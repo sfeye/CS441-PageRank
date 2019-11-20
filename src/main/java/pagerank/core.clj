@@ -13,10 +13,10 @@
       (hash-map (keyword id) rank))
     ))
 
-(defn make-map [s]
-  (reduce conj (map hash-map [:id :links] (.split s " " 2))))
+(defn make-map [line-seq]
+  (reduce conj (map hash-map [:id :links] (.split line-seq " " 2))))
 
 (defn PrintTest []
-  (clojure.pprint/pprint (map make-map (read-lines "pages.txt"))))
+  (clojure.pprint/pprint (nth (map make-map (read-lines "pages.txt")) 9999)))
 
 (PrintTest)
