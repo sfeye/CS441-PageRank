@@ -1,10 +1,13 @@
 (ns pagerank.core (:require clojure.pprint))
 
 (def damping-factor 0.85)
+(def initial-ranks 0.0001)
 
 (defn read-lines [file]
   (with-open [rdr (clojure.java.io/reader (clojure.java.io/resource file))]
-    (doall (line-seq rdr))))
+    (doall (line-seq rdr))
+    )
+  )
 
 (defn rank-map [line-seq]
   (for [line line-seq]
@@ -12,7 +15,9 @@
           id (first nums)
           links (rest nums)
           rank (count links)]
-      (hash-map :id id, :rank rank)))
+      (hash-map :id id, :rank rank)
+      )
+    )
   )
 
 (defn link-map [line-seq]
@@ -20,17 +25,21 @@
     (let [nums (clojure.string/split line #" ")
           id (first nums)
           links (rest nums)]
-      (hash-map :id id, :links links)))
+      (hash-map :id id, :links links)
+      )
+    )
   )
 
 (def link-coll (link-map (read-lines "pages.txt")))
 (def rank-coll (rank-map (read-lines "pages.txt")))
 
 (defn compute-rank []
-  (loop [x 1000]
-    (when (> x 0)
-      ;compute the ranks here
-      (recur (- x 1))
+  (let [pr-map {}]
+    (loop [x 1000]
+      (when (> x 0)
+        ;compute the ranks here
+        (recur (- x 1))
+        )
       )
     )
   )
