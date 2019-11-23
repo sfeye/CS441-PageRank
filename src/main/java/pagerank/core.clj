@@ -48,18 +48,24 @@
   (reduce + (line-ranks-comp id)))
 
 (defn apply-damp-comp [id]
-  (println (+ one-minus-damp (* damping-factor (sum-ranks-comp id)))))
+  (+ one-minus-damp (* damping-factor (sum-ranks-comp id))))
 
-(defn assoc-rank []
-  (loop [x 1]
-    (when (> x 0)
-      (loop [y 9999]
-        (when (>= y 0)
-          (apply-damp-comp y)
-          (recur (- y 1)))))
-    (recur (- x 1))
+(defn rank-steps []
+  (loop [x 0]
+    (when (< x 9999)
+      (assoc (nth rank-coll x) :rank (apply-damp-comp x))
+      (recur (+ x 1))
+      )
     )
   )
+
+(defn iter-thousand []
+  (loop [x 0]
+    (when (< x 1000)
+      )
+    )
+  )
+
 
 ;for testing
 (defn print-test []
@@ -73,4 +79,4 @@
   )
 
 ;(print-test)
-(assoc-rank)
+(rank-steps)
