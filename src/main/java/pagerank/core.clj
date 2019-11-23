@@ -15,7 +15,7 @@
   (for [line line-seq]
     (let [nums (clojure.string/split line #" ")
           id (first nums)]
-      (hash-map :id id, :rank initial-ranks)
+      (hash-map (keyword id) initial-ranks)
       )
     )
   )
@@ -31,11 +31,14 @@
   )
 
 (def link-coll (link-map (read-lines "pages.txt")))
-(def rank-coll (rank-map (read-lines "pages.txt")))
+;(def rank-coll (atom (rank-map (read-lines "pages.txt"))))
+
+(def rank-coll (atom (zipmap (range 0 9999) (repeat initial-ranks))))
 
 (defn update-rank-comp [id]
   (let [count-x (count (get (nth link-coll id) :links))
-        curr-rank-x (get (nth rank-coll id) :rank)
+        ;this is where the error lies...
+        curr-rank-x (get @rank-coll id)
         updated-rank (/ curr-rank-x count-x)]
     updated-rank)
   )
@@ -50,18 +53,20 @@
 (defn apply-damp-comp [id]
   (+ one-minus-damp (* damping-factor (sum-ranks-comp id))))
 
-(defn rank-steps []
+(defn rank-step []
   (loop [x 0]
-    (when (< x 9999)
-      (assoc (nth rank-coll x) :rank (apply-damp-comp x))
+    (when (< x 10000)
+      (swap! rank-coll assoc x (apply-damp-comp x))
       (recur (+ x 1))
       )
     )
+  ;(clojure.pprint/pprint @rank-coll)
   )
 
 (defn iter-thousand []
   (loop [x 0]
-    (when (< x 1000)
+    (when (< x 1)
+      (clojure.pprint/pprint @rank-coll)
       )
     )
   )
@@ -69,14 +74,14 @@
 
 ;for testing
 (defn print-test []
-  (clojure.pprint/pprint (nth link-coll 9999))
+  (clojure.pprint/pprint (nth link-coll 300))
   (clojure.pprint/pprint (get (nth link-coll 9999) :id))
   (clojure.pprint/pprint (get (nth link-coll 9999) :links))
   (println "5th:" (nth (get (nth link-coll 9999) :links) 5))
-  (clojure.pprint/pprint (nth rank-coll 9999))
-  (clojure.pprint/pprint (get (nth rank-coll 9999) :id))
-  (clojure.pprint/pprint (get (nth rank-coll 9999) :rank))
+  (clojure.pprint/pprint (get @rank-coll 0))
+  (clojure.pprint/pprint @rank-coll)
   )
 
 ;(print-test)
-(rank-steps)
+(rank-step)
+;(iter-thousand)
