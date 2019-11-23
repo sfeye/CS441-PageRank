@@ -33,19 +33,26 @@
 (def link-coll (link-map (read-lines "pages.txt")))
 (def rank-coll (rank-map (read-lines "pages.txt")))
 
-(defn sum-ranks [id]
+(defn updated-rank [id]
   (let [count-x (count (get (nth link-coll id) :links))
         curr-rank-x (get (nth rank-coll id) :rank)
-        updated-rank (* damping-factor (/ curr-rank-x count-x))]
-    (println updated-rank))
+        updated-rank (/ curr-rank-x count-x)]
+    updated-rank)
+  )
+
+(defn line-ranks [id]
+  (for [links (get (nth link-coll id) :links)]
+    (updated-rank (read-string links))))
+
+(defn sum-ranks [id]
+  (println (reduce + (line-ranks id)))
   )
 
 (defn assoc-rank []
   (loop [x 1]
     (when (> x 0)
       (loop [y 9999]
-        (when (> y 0)
-          (println y)
+        (when (>= y 0)
           (recur (- y 1)))))
     (recur (- x 1))
     )
@@ -62,4 +69,5 @@
   (clojure.pprint/pprint (get (nth rank-coll 9999) :rank))
   )
 
+;(print-test)
 (sum-ranks 0)
