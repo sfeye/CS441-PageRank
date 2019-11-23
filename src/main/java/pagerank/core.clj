@@ -33,26 +33,29 @@
 (def link-coll (link-map (read-lines "pages.txt")))
 (def rank-coll (rank-map (read-lines "pages.txt")))
 
-(defn updated-rank [id]
+(defn update-rank-comp [id]
   (let [count-x (count (get (nth link-coll id) :links))
         curr-rank-x (get (nth rank-coll id) :rank)
         updated-rank (/ curr-rank-x count-x)]
     updated-rank)
   )
 
-(defn line-ranks [id]
+(defn line-ranks-comp [id]
   (for [links (get (nth link-coll id) :links)]
-    (updated-rank (read-string links))))
+    (update-rank-comp (read-string links))))
 
-(defn sum-ranks [id]
-  (println (reduce + (line-ranks id)))
-  )
+(defn sum-ranks-comp [id]
+  (reduce + (line-ranks-comp id)))
+
+(defn apply-damp-comp [id]
+  (println (+ one-minus-damp (* damping-factor (sum-ranks-comp id)))))
 
 (defn assoc-rank []
   (loop [x 1]
     (when (> x 0)
       (loop [y 9999]
         (when (>= y 0)
+          (apply-damp-comp y)
           (recur (- y 1)))))
     (recur (- x 1))
     )
@@ -70,4 +73,4 @@
   )
 
 ;(print-test)
-(sum-ranks 0)
+(assoc-rank)
