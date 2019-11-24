@@ -53,8 +53,9 @@
 
 ;for testing
 (defn print-test []
+  (time (rank-step))
   (clojure.pprint/pprint @rank-coll))
 
-(try-to-converge)
+;(try-to-converge)
 (print-test)
 
