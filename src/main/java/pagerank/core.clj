@@ -3,45 +3,27 @@
 (def damping-factor 0.85)
 (def one-minus-damp 0.15)
 ;used to apply first step 1/10,000
-(def initial-ranks 0.0001)
+(def initial-ranks 1)
 
 (defn read-lines [file]
   (with-open [rdr (clojure.java.io/reader (clojure.java.io/resource file))]
-    (doall (line-seq rdr))
-    )
-  )
-
-(defn rank-map [line-seq]
-  (for [line line-seq]
-    (let [nums (clojure.string/split line #" ")
-          id (first nums)]
-      (hash-map (keyword id) initial-ranks)
-      )
-    )
-  )
+    (doall (line-seq rdr))))
 
 (defn link-map [line-seq]
   (for [line line-seq]
     (let [nums (clojure.string/split line #" ")
           id (first nums)
           links (rest nums)]
-      (hash-map :id id, :links links)
-      )
-    )
-  )
+      (hash-map :id id, :links links))))
 
 (def link-coll (link-map (read-lines "pages.txt")))
-;(def rank-coll (atom (rank-map (read-lines "pages.txt"))))
-
-(def rank-coll (atom (zipmap (range 0 9999) (repeat initial-ranks))))
+(def rank-coll (atom (zipmap (range 0 10000) (repeat initial-ranks))))
 
 (defn update-rank-comp [id]
   (let [count-x (count (get (nth link-coll id) :links))
-        ;this is where the error lies...
         curr-rank-x (get @rank-coll id)
         updated-rank (/ curr-rank-x count-x)]
-    updated-rank)
-  )
+    updated-rank))
 
 (defn line-ranks-comp [id]
   (for [links (get (nth link-coll id) :links)]
@@ -53,35 +35,26 @@
 (defn apply-damp-comp [id]
   (+ one-minus-damp (* damping-factor (sum-ranks-comp id))))
 
+(defn abs [num] (max num (- num)))
+
 (defn rank-step []
   (loop [x 0]
     (when (< x 10000)
-      (swap! rank-coll assoc x (apply-damp-comp x))
-      (recur (+ x 1))
-      )
-    )
-  ;(clojure.pprint/pprint @rank-coll)
-  )
+      (let [difference (- (apply-damp-comp x) (get @rank-coll x) )]
+      (if (< (abs difference) 0.00001) (println "Page" x "has converged at:" (get @rank-coll x)) (swap! rank-coll assoc x (apply-damp-comp x)))
+      (recur (+ x 1))))))
 
-(defn iter-thousand []
+(defn try-to-converge []
   (loop [x 0]
-    (when (< x 1)
-      (clojure.pprint/pprint @rank-coll)
-      )
-    )
-  )
+    (when (< x 50)
+      (rank-step)
+      (recur (+ x 1)))))
 
 
 ;for testing
 (defn print-test []
-  (clojure.pprint/pprint (nth link-coll 300))
-  (clojure.pprint/pprint (get (nth link-coll 9999) :id))
-  (clojure.pprint/pprint (get (nth link-coll 9999) :links))
-  (println "5th:" (nth (get (nth link-coll 9999) :links) 5))
-  (clojure.pprint/pprint (get @rank-coll 0))
-  (clojure.pprint/pprint @rank-coll)
-  )
+  (clojure.pprint/pprint @rank-coll))
 
-;(print-test)
-(rank-step)
-;(iter-thousand)
+(try-to-converge)
+(print-test)
+
