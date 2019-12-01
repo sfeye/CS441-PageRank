@@ -2,7 +2,6 @@
 
 (def damping-factor 0.85)
 (def one-minus-damp 0.15)
-;used to apply first step 1/10,000
 (def initial-ranks 1)
 
 (defn read-lines [file]
@@ -17,6 +16,7 @@
       (hash-map :id id, :links links))))
 
 (def link-coll (link-map (read-lines "pages.txt")))
+(def no-loop (atom (set (range 0 10000))))
 (def rank-coll (atom (zipmap (range 0 10000) (repeat initial-ranks))))
 
 (defn update-rank-comp [id]
@@ -37,25 +37,36 @@
 
 (defn abs [num] (max num (- num)))
 
-(defn rank-step []
-  (loop [x 0]
-    (when (< x 10000)
-      (let [difference (- (apply-damp-comp x) (get @rank-coll x) )]
-      (if (< (abs difference) 0.00001) (println "Page" x "has converged at:" (get @rank-coll x)) (swap! rank-coll assoc x (apply-damp-comp x)))
-      (recur (+ x 1))))))
+(defn difference [x]
+  (let [y (- (apply-damp-comp x) (get @rank-coll x))]
+    (abs y) )
+  )
 
-(defn try-to-converge []
-  (loop [x 0]
-    (when (< x 50)
-      (rank-step)
-      (recur (+ x 1)))))
+(defn rank-step []
+  (doseq [x @no-loop]
+        (if (< (difference x) 0.00001) (swap! no-loop disj x) (swap! rank-coll assoc x (apply-damp-comp x)))))
+
+(defn number-of-iterations [y]
+  (dotimes [_ (Math/round (double y))]
+    (rank-step)))
+
+(defn number-of-threads [t]
+  (let [num-it (/ 100 t)
+        fs (for [_ (range t)]
+             (future (number-of-iterations num-it)))]
+    (doseq [f fs]
+      @f)))
 
 
 ;for testing
 (defn print-test []
-  (time (rank-step))
-  (clojure.pprint/pprint @rank-coll))
+  ;(clojure.pprint/pprint @no-loop)
+  (clojure.pprint/pprint @rank-coll)
+  )
 
-;(try-to-converge)
+;(time (number-of-iterations 100))
+(time (number-of-threads 64))
+;(time (rank-step))
 (print-test)
+
 
