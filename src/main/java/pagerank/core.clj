@@ -29,7 +29,6 @@
   (for [links (get (nth link-coll id) :links)]
     (update-rank-comp (read-string links))))
 
-;this is the method that is taking too long, reduce is the potential problem
 (defn sum-ranks-comp [id]
   (reduce + (doall (line-ranks-comp id))))
 
@@ -42,40 +41,33 @@
     (doseq [x @no-loop]
       (let [damp-comp (apply-damp-comp x)
             curr-rank (get @rank-coll x)]
-        (if (< (abs (- damp-comp curr-rank)) 0.01) (swap! no-loop disj x) (swap! rank-coll assoc x damp-comp)))))
+        (if (< (abs (- damp-comp curr-rank)) 0.00001) (swap! no-loop disj x) (swap! rank-coll assoc x damp-comp)))))
 
 (defn number-of-iterations [y]
   (dotimes [_ y]
     (when (> (count @no-loop) 0) (rank-step))))
 
 (defn number-of-threads [t]
-  (let [num-it (Math/round (double (/ 1000 t)))
+  (let [num-it (Math/ceil (double (/ 1000 t)))
         fs (for [_ (range t)]
              (future (number-of-iterations num-it)))]
     (doseq [f fs]
       @f)))
 
-(defn to-file [time]
-  (spit (clojure.java.io/resource "outputs.txt") time))
 
-(defn out-times-to-file []
-  (to-file (time (number-of-threads 1)))
-  (to-file (time (number-of-threads 2)))
-  (to-file (time (number-of-threads 4)))
-  (to-file (time (number-of-threads 8)))
-  (to-file (time (number-of-threads 16)))
-  (to-file (time (number-of-threads 32)))
-  (to-file (time (number-of-threads 64)))
+
+(defn to-file [time]
+  (spit (clojure.java.io/resource "outputs.txt") time :append true))
+
+(defn out-times-to-file [n]
+  (to-file (with-out-str (time (number-of-threads n))))
   )
 
 ;for testing
 (defn print-test []
-  ;(to-file "test")
-  (clojure.pprint/pprint (count @no-loop))
-  ;(clojure.pprint/pprint @rank-coll)
+  (clojure.pprint/pprint (count @no-loop))                  ; count of number of converged pages
+  (clojure.pprint/pprint @rank-coll)
   )
 
-;(time (number-of-iterations 1000))
-(time (number-of-threads 8))
-;(time (rank-step))
-;(print-test)
+(out-times-to-file 1)
+(number-of-threads 2)
